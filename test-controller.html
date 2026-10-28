@@ -1,6 +1,17 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-606D6DFDG5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+
+      gtag("config", "G-606D6DFDG5");
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>T300 Mac Fix | Input Monitor</title>
@@ -681,6 +692,18 @@
       dismissToast.addEventListener("click", () => {
         warningDismissed = true;
         rawModeToast.hidden = true;
+      });
+      document.querySelector(".download-link").addEventListener("click", (event) => {
+        const link = event.currentTarget;
+        if (typeof window.gtag !== "function") return;
+
+        window.gtag("event", "file_download", {
+          file_name: "T300-Mac-Fix.dmg",
+          file_extension: "dmg",
+          link_url: link.href,
+          link_text: link.textContent.trim().replace(/\s+/g, " "),
+          transport_type: "beacon",
+        });
       });
       frame();
     </script>
