@@ -7,57 +7,9 @@ private let supportedProductID: UInt16 = 0xb66e
 private let unsupportedProductIDs: Set<UInt16> = [0xb66d, 0xb66f]
 private let allT300ProductIDs: Set<UInt16> = [genericProductID, supportedProductID, 0xb66d, 0xb66f]
 
-private struct InitializationResult {
-    let succeeded: Bool
+private struct HelperStatus: Decodable {
+    let state: String
     let message: String
-}
-
-private func shellQuoted(_ value: String) -> String {
-    "'" + value.replacingOccurrences(of: "'", with: "'\\''") + "'"
-}
-
-private func appleScriptQuoted(_ value: String) -> String {
-    "\"" + value
-        .replacingOccurrences(of: "\\", with: "\\\\")
-        .replacingOccurrences(of: "\"", with: "\\\"") + "\""
-}
-
-private func runInitializer(projectDirectory: String, nodePath: String) -> InitializationResult {
-    let scriptPath = URL(fileURLWithPath: projectDirectory)
-        .appendingPathComponent("initialize-t300.mjs").path
-    let command = "cd \(shellQuoted(projectDirectory)) && \(shellQuoted(nodePath)) \(shellQuoted(scriptPath)) --initialize"
-    let appleScript = "do shell script \(appleScriptQuoted(command)) with administrator privileges"
-    let process = Process()
-    let outputPipe = Pipe()
-    let errorPipe = Pipe()
-    process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-    process.arguments = ["-e", appleScript]
-    process.standardOutput = outputPipe
-    process.standardError = errorPipe
-
-    do {
-        try process.run()
-        process.waitUntilExit()
-    } catch {
-        return InitializationResult(succeeded: false, message: error.localizedDescription)
-    }
-
-    let output = String(
-        decoding: outputPipe.fileHandleForReading.readDataToEndOfFile(),
-        as: UTF8.self
-    )
-    let errorOutput = String(
-        decoding: errorPipe.fileHandleForReading.readDataToEndOfFile(),
-        as: UTF8.self
-    )
-    let succeeded = process.terminationStatus == 0 &&
-        (output.contains("Initialization successful") || output.contains("already in PS3 / PC USB mode"))
-    let detail = (errorOutput.isEmpty ? output : errorOutput)
-        .trimmingCharacters(in: .whitespacesAndNewlines)
-    return InitializationResult(
-        succeeded: succeeded,
-        message: succeeded ? "Initialized successfully" : (detail.isEmpty ? "Initialization failed" : detail)
-    )
 }
 
 private func readUSBNumber(_ service: io_service_t, key: String) -> UInt16? {
@@ -98,23 +50,15 @@ private func connectedT300ProductIDs() -> Set<UInt16> {
 
 @MainActor
 private final class T300MenuBarDelegate: NSObject, NSApplicationDelegate {
-    private let projectDirectory: String
-    private let nodePath: String
     private var statusItem: NSStatusItem!
     private var stateItem: NSMenuItem!
     private var initializeItem: NSMenuItem!
     private var timer: Timer?
     private var productIDs = Set<UInt16>()
-    private var isInitializing = false
-    private var attemptedThisConnection = false
-    private var initializationSucceeded = false
-    private var initializationError: String?
-
-    init(projectDirectory: String, nodePath: String) {
-        self.projectDirectory = projectDirectory
-        self.nodePath = nodePath
-        super.init()
-    }
+    private var helperStatus: HelperStatus?
+    private let stateDirectory = URL(fileURLWithPath: "/Library/Application Support/T300 Mac Fix", isDirectory: true)
+    private let requestDirectory = FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Library/Application Support/T300 Mac Fix", isDirectory: true)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let menu = NSMenu()
@@ -151,69 +95,60 @@ private final class T300MenuBarDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func refreshDevices() {
         productIDs = connectedT300ProductIDs()
+        helperStatus = readHelperStatus()
         statusItem.isVisible = !productIDs.isEmpty
 
         if productIDs.isEmpty {
-            if !isInitializing {
-                attemptedThisConnection = false
-                initializationSucceeded = false
-                initializationError = nil
-            }
-            stateItem.title = isInitializing ? "🔄 Initializing T300…" : "Waiting for T300"
+            stateItem.title = "Waiting for T300"
             initializeItem.isEnabled = false
             return
         }
 
         if productIDs.contains(supportedProductID) {
-            stateItem.title = initializationSucceeded
+            stateItem.title = helperStatus?.state == "ready"
                 ? "✅ Initialized successfully"
                 : "✅ T300 ready · PS3 / PC mode"
         } else if productIDs.contains(genericProductID) {
-            if isInitializing {
-                stateItem.title = "🔐 Authorizing and initializing…"
-            } else if let initializationError {
-                stateItem.title = "❌ \(initializationError)"
-            } else {
+            switch helperStatus?.state {
+            case "initializing":
+                stateItem.title = "⚠️ \(helperStatus?.message ?? "Initializing; wheel may move…")"
+            case "error":
+                stateItem.title = "❌ \(helperStatus?.message ?? "Initialization failed")"
+            case "ready":
+                stateItem.title = "✅ T300 initialized"
+            case "unsupported":
+                stateItem.title = "⚠️ \(helperStatus?.message ?? "Unsupported mode")"
+            case "waiting":
                 stateItem.title = "⚠️ Initialization needed"
+            default:
+                stateItem.title = "❌ Privileged helper is not running"
             }
         } else if !productIDs.isDisjoint(with: unsupportedProductIDs) {
             stateItem.title = "⚠️ Unsupported mode · set switch to PS3 / PC"
         }
 
-        initializeItem.title = initializationError == nil ? "Initialize Now" : "Retry Initialization"
-        initializeItem.isEnabled = productIDs.contains(genericProductID) && !isInitializing
-
-        if productIDs.contains(genericProductID), !isInitializing, !attemptedThisConnection {
-            attemptedThisConnection = true
-            startInitialization()
-        }
+        initializeItem.title = helperStatus?.state == "error" ? "Retry Initialization" : "Initialize Now"
+        initializeItem.isEnabled = productIDs.contains(genericProductID) &&
+            helperStatus != nil && helperStatus?.state != "initializing"
     }
 
     @objc private func initializeFromMenu() {
-        guard productIDs.contains(genericProductID), !isInitializing else { return }
-        attemptedThisConnection = true
-        initializationError = nil
-        startInitialization()
+        guard productIDs.contains(genericProductID), helperStatus?.state != "initializing" else { return }
+        let requestURL = requestDirectory.appendingPathComponent("initialize.request")
+        do {
+            try FileManager.default.createDirectory(at: requestDirectory, withIntermediateDirectories: true)
+            try Data().write(to: requestURL, options: .atomic)
+            stateItem.title = "🔄 Retry requested…"
+            initializeItem.isEnabled = false
+        } catch {
+            stateItem.title = "❌ Could not contact privileged helper"
+        }
     }
 
-    private func startInitialization() {
-        isInitializing = true
-        initializationSucceeded = false
-        stateItem.title = "🔐 Authorizing and initializing…"
-        initializeItem.isEnabled = false
-
-        let projectDirectory = projectDirectory
-        let nodePath = nodePath
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let result = runInitializer(projectDirectory: projectDirectory, nodePath: nodePath)
-            DispatchQueue.main.async {
-                guard let self else { return }
-                self.isInitializing = false
-                self.initializationSucceeded = result.succeeded
-                self.initializationError = result.succeeded ? nil : result.message
-                self.refreshDevices()
-            }
-        }
+    private func readHelperStatus() -> HelperStatus? {
+        let statusURL = stateDirectory.appendingPathComponent("helper-state.json")
+        guard let data = try? Data(contentsOf: statusURL) else { return nil }
+        return try? JSONDecoder().decode(HelperStatus.self, from: data)
     }
 
     @objc private func quit() {
@@ -225,17 +160,9 @@ private final class T300MenuBarDelegate: NSObject, NSApplicationDelegate {
 struct T300MenuBarApp {
     @MainActor
     static func main() {
-        guard CommandLine.arguments.count >= 3 else {
-            fputs("Usage: T300MenuBar <project-directory> <node-path>\n", stderr)
-            return
-        }
-
         let application = NSApplication.shared
         application.setActivationPolicy(.accessory)
-        let delegate = T300MenuBarDelegate(
-            projectDirectory: CommandLine.arguments[1],
-            nodePath: CommandLine.arguments[2]
-        )
+        let delegate = T300MenuBarDelegate()
         application.delegate = delegate
         application.run()
     }

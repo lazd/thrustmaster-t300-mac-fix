@@ -1,17 +1,16 @@
 # Thrustmaster T300 Mac Fix
 
-This script makes it possible to use your Thrustmaster T300 in macOS without any special drivers or apps, just a quick command line call.
+Use the native menu-bar app to initialize your Thrustmaster T300 in macOS without Node.js or third-party drivers. Administrator approval is needed once to install its privileged USB helper.
 
 1. Set the T300's mode switch to **PS3 / PC**.
 2. Connect the T300 to your Mac over USB.
-3. Install dependencies and initialize the wheel:
+3. Install and start the menu-bar app:
 
 ```sh
-npm install
-npm run initialize
+sh ./install-menubar.sh
 ```
 
-Warning: The initializer may move the wheel while it recalibrates, so keep your hands clear.
+The wheel may move while it recalibrates, so keep your hands clear.
 
 It requests native USB mode; it does not change the physical switch or install firmware. The mode will reset when you unplug the wheel.
 
@@ -25,18 +24,12 @@ The browser opens automatically, and the monitor starts scanning as soon as the 
 
 ## Menu Bar App
 
-Install the native menu-bar app and start it now:
-
-```sh
-npm run menubar:install
-```
-
-It launches at login and stays hidden until a T300 is connected. A generic-mode wheel is initialized automatically; macOS asks for administrator authorization. The menu shows whether initialization succeeded and offers a retry and quit option. The app uses the existing Node.js initializer for USB transfers.
+The menu app launches at login and stays hidden until a T300 is connected. A root LaunchDaemon watches for the wheel and initializes generic mode automatically; the menu shows the result and offers retry and quit options. Administrator approval is required when installing or updating the helper, but plugging in the wheel never prompts. Building or updating the app requires Xcode Command Line Tools.
 
 Remove the app and its login item with:
 
 ```sh
-npm run menubar:uninstall
+sh ./install-menubar.sh --uninstall
 ```
 
 You can then use your Thrustmaster T300 in any game and your pedals will act as axes instead of buttons, steering will be precise, and buttons will be mapped predictably.
