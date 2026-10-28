@@ -252,6 +252,24 @@
         max-width: 1100px;
       }
 
+      .sponsor-note {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        max-width: 1100px;
+        padding: 18px 0;
+        margin-top: 24px;
+        border-top: 1px solid #cad4ce;
+        color: #52635b;
+        font-size: 13px;
+      }
+
+      .sponsor-links { display: flex; flex-wrap: wrap; gap: 18px; }
+      .sponsor-links a { color: #176d55; font-weight: 600; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+      .sponsor-links a:hover { color: #105941; }
+
       section {
         min-width: 0;
       }
@@ -550,6 +568,13 @@
           </table>
         </section>
       </div>
+      <footer class="sponsor-note">
+        <span>Stoked your wheel works in macOS and want to show your appreciation?</span>
+        <nav class="sponsor-links" aria-label="Sponsorship links">
+          <a href="https://github.com/sponsors/lazd" target="_blank" rel="noopener noreferrer">GitHub Sponsors</a>
+          <a href="https://www.patreon.com/c/lazd" target="_blank" rel="noopener noreferrer">Patreon</a>
+        </nav>
+      </footer>
     </main>
     <aside id="raw-mode-toast" class="toast" role="alert" hidden>
       <span>Oh no! It looks like your T300 is plugged in and the fix isn't installed yet.</span>
