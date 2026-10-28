@@ -6,7 +6,9 @@
   "scripts": {
     "inspect": "node initialize-t300.mjs",
     "initialize": "sudo node initialize-t300.mjs --initialize",
-    "test": "open test-controller.html"
+    "test": "open test-controller.html",
+    "menubar:install": "sh ./install-menubar.sh",
+    "menubar:uninstall": "sh ./install-menubar.sh --uninstall"
   },
   "dependencies": {
     "usb": "^2.19.1"

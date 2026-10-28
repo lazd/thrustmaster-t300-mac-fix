@@ -23,6 +23,22 @@ npm run test
 
 The browser opens automatically, and the monitor starts scanning as soon as the page loads. It displays the browser's indexed axes and buttons.
 
+## Menu Bar App
+
+Install the native menu-bar app and start it now:
+
+```sh
+npm run menubar:install
+```
+
+It launches at login and stays hidden until a T300 is connected. A generic-mode wheel is initialized automatically; macOS asks for administrator authorization. The menu shows whether initialization succeeded and offers a retry and quit option. The app uses the existing Node.js initializer for USB transfers.
+
+Remove the app and its login item with:
+
+```sh
+npm run menubar:uninstall
+```
+
 You can then use your Thrustmaster T300 in any game and your pedals will act as axes instead of buttons, steering will be precise, and buttons will be mapped predictably.
 
 ## T300 6-Axis Layout
