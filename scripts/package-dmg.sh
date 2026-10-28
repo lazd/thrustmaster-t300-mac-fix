@@ -5,8 +5,7 @@ project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$project_dir"
 version=$(node -p 'require("./package.json").version')
 output_directory="$project_dir/dist"
-output_image="$output_directory/T300-Mac-Fix-$version.dmg"
-latest_image="$output_directory/T300-Mac-Fix.dmg"
+output_image="$output_directory/T300-Mac-Fix.dmg"
 build_directory=$(mktemp -d "${TMPDIR:-/tmp}/t300-release.XXXXXX")
 trap 'rm -rf "$build_directory"' EXIT
 
@@ -104,8 +103,9 @@ create_action_app "Install T300 Mac Fix" "com.lazd.thrustmaster-t300-installer" 
 create_action_app "Uninstall T300 Mac Fix" "com.lazd.thrustmaster-t300-uninstaller" \
   uninstall Uninstall uninstall.command uninstall-root.sh
 
-cat > "$staging/Read Me.txt" <<'README'
+cat > "$staging/Read Me.txt" <<README
 THRUSTMASTER T300 MAC FIX
+VERSION $version
 
 INSTALL
 1. Open Install T300 Mac Fix.
@@ -131,5 +131,4 @@ rm -f "$output_image"
 hdiutil create -volname "T300 Mac Fix $version" -srcfolder "$staging" \
   -ov -format UDZO "$output_image" >/dev/null
 hdiutil verify "$output_image" >/dev/null
-cp "$output_image" "$latest_image"
-printf 'Created GitHub release assets:\n  %s\n  %s\n' "$output_image" "$latest_image"
+printf 'Created GitHub release asset: %s\n' "$output_image"

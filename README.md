@@ -4,7 +4,7 @@ Initialize a Thrustmaster T300 on macOS with a menu-bar app and automatic plug-i
 
 ## Install from DMG
 
-1. Download the latest **T300-Mac-Fix** DMG from [GitHub Releases](https://github.com/lazd/thrustmaster-t300-mac-fix/releases).
+1. Download [the latest **T300-Mac-Fix** DMG](https://github.com/lazd/thrustmaster-t300-mac-fix/releases/latest/download/T300-Mac-Fix.dmg).
 2. Set the wheel's mode switch to **PS3 / PC**, then connect it to your Mac over USB.
 3. Open the downloaded DMG and launch **Install T300 Mac Fix**.
 4. Approve the one-time administrator prompt in Terminal. Keep hands clear while the wheel initializes; it may move.
@@ -41,7 +41,7 @@ To build the precompiled installer and uninstaller image locally:
 npm run release:dmg
 ```
 
-The versioned DMG and stable `T300-Mac-Fix.dmg` latest-download asset are written to `dist/` for attaching to a GitHub Release. End users do not need Node.js or Xcode Command Line Tools.
+The DMG is written to `dist/T300-Mac-Fix.dmg` for attaching to a GitHub Release. Its read-me includes the package version. End users do not need Node.js or Xcode Command Line Tools.
 
 You can then use your Thrustmaster T300 in any game and your pedals will act as axes instead of buttons, steering will be precise, and buttons will be mapped predictably.
 
