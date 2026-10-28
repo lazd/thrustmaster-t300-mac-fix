@@ -6,7 +6,8 @@
   "scripts": {
     "inspect": "node initialize-t300.mjs",
     "initialize": "sudo node initialize-t300.mjs --initialize",
-    "test": "open test-controller.html"
+    "test": "open test-controller.html",
+    "release:dmg": "sh ./scripts/package-dmg.sh"
   },
   "dependencies": {
     "usb": "^2.19.1"

@@ -32,6 +32,16 @@ Remove the app and its login item with:
 sh ./install-menubar.sh --uninstall
 ```
 
+## GitHub DMG
+
+Build the precompiled installer and uninstaller image with:
+
+```sh
+npm run release:dmg
+```
+
+The versioned DMG is written to `dist/` and can be attached to a GitHub Release. It contains the precompiled menu app and privileged helper, so end users do not need Node.js or Xcode Command Line Tools. The installer and uninstaller each request administrator approval when run. This DMG is unsigned and not notarized; Gatekeeper may require Control-clicking an app and choosing **Open**.
+
 You can then use your Thrustmaster T300 in any game and your pedals will act as axes instead of buttons, steering will be precise, and buttons will be mapped predictably.
 
 ## T300 6-Axis Layout
