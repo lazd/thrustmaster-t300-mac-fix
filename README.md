@@ -1,18 +1,17 @@
 # Thrustmaster T300 Mac Fix
 
-Use the native menu-bar app to initialize your Thrustmaster T300 in macOS without Node.js or third-party drivers. Administrator approval is needed once to install its privileged USB helper.
+Initialize a Thrustmaster T300 on macOS with a menu-bar app and automatic plug-in setup. No Node.js or third-party drivers are needed.
 
-1. Set the T300's mode switch to **PS3 / PC**.
-2. Connect the T300 to your Mac over USB.
-3. Install and start the menu-bar app:
+## Install from DMG
 
-```sh
-sh ./install-menubar.sh
-```
+1. Download the latest **T300-Mac-Fix** DMG from [GitHub Releases](https://github.com/lazd/thrustmaster-t300-mac-fix/releases).
+2. Set the wheel's mode switch to **PS3 / PC**, then connect it to your Mac over USB.
+3. Open the downloaded DMG and launch **Install T300 Mac Fix**.
+4. Approve the one-time administrator prompt in Terminal. Keep hands clear while the wheel initializes; it may move.
 
-The wheel may move while it recalibrates, so keep your hands clear.
+The menu-bar app starts at login and appears when the T300 is connected. Future plug-ins do not require another administrator prompt. If Gatekeeper blocks the unsigned app, Control-click it and choose **Open**.
 
-It requests native USB mode; it does not change the physical switch or install firmware. The mode will reset when you unplug the wheel.
+To remove the app and its helper, open the DMG and launch **Uninstall T300 Mac Fix**, then approve the administrator prompt.
 
 To check the live controller inputs, open `test-controller.html` or simply run:
 
@@ -21,6 +20,8 @@ npm run test
 ```
 
 The browser opens automatically, and the monitor starts scanning as soon as the page loads. It displays the browser's indexed axes and buttons.
+
+You can also use the [online controller tester](https://lazd.github.io/thrustmaster-t300-mac-fix/). Connect the initialized wheel, press a wheel button to activate browser gamepad access, then turn the wheel and press buttons or pedals to watch their indexed values update. For a direct release download, use [Download the latest DMG](https://github.com/lazd/thrustmaster-t300-mac-fix/releases/latest/download/T300-Mac-Fix.dmg).
 
 ## Menu Bar App
 
@@ -32,15 +33,15 @@ Remove the app and its login item with:
 sh ./install-menubar.sh --uninstall
 ```
 
-## GitHub DMG
+## Build a Release DMG
 
-Build the precompiled installer and uninstaller image with:
+To build the precompiled installer and uninstaller image locally:
 
 ```sh
 npm run release:dmg
 ```
 
-The versioned DMG is written to `dist/` and can be attached to a GitHub Release. It contains the precompiled menu app and privileged helper, so end users do not need Node.js or Xcode Command Line Tools. The installer and uninstaller each request administrator approval when run. This DMG is unsigned and not notarized; Gatekeeper may require Control-clicking an app and choosing **Open**.
+The versioned DMG and stable `T300-Mac-Fix.dmg` latest-download asset are written to `dist/` for attaching to a GitHub Release. End users do not need Node.js or Xcode Command Line Tools.
 
 You can then use your Thrustmaster T300 in any game and your pedals will act as axes instead of buttons, steering will be precise, and buttons will be mapped predictably.
 

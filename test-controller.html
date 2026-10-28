@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>T300 Input Monitor</title>
+    <title>T300 Mac Fix | Input Monitor</title>
     <style>
       :root {
         color-scheme: light;
@@ -26,17 +26,31 @@
 
       header {
         display: flex;
-        align-items: end;
+        align-items: center;
         justify-content: space-between;
         gap: 24px;
-        padding: 28px clamp(20px, 5vw, 64px) 22px;
+        padding: 18px clamp(20px, 5vw, 64px);
         border-bottom: 1px solid #cad4ce;
-        background: rgb(241 244 241 / 94%);
+        background: #fbfcf9;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-icon {
+        display: block;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+        border-radius: 10px;
       }
 
       h1 {
         margin: 0;
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 650;
       }
 
@@ -75,7 +89,149 @@
       }
 
       main {
-        padding: 28px clamp(20px, 5vw, 64px) 56px;
+        padding: 0 clamp(20px, 5vw, 64px) 56px;
+      }
+
+      .setup-guide {
+        max-width: 1100px;
+        padding: 28px 0 30px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid #cad4ce;
+      }
+
+      .guide-heading {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 22px;
+      }
+
+      .guide-heading h2 {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 19px;
+      }
+
+      .guide-heading p {
+        margin: 6px 0 0;
+        color: #52635b;
+        font-size: 14px;
+      }
+
+      .download-link {
+        display: inline-flex;
+        align-self: center;
+        min-height: 42px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        flex: 0 0 auto;
+        padding: 0 16px;
+        border-radius: 4px;
+        background: #176d55;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .download-link:hover {
+        background: #105941;
+      }
+      .download-link:focus-visible {
+        outline: 3px solid #ed9b52;
+        outline-offset: 3px;
+      }
+      .download-link svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .guide-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.82fr);
+        align-items: center;
+        gap: clamp(24px, 4vw, 52px);
+      }
+
+      .setup-steps {
+        display: grid;
+        gap: 0;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        counter-reset: setup;
+      }
+
+      .setup-steps li {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        padding: 13px 0;
+        border-top: 1px solid #d5ddd8;
+        counter-increment: setup;
+      }
+
+      .setup-steps li::before {
+        color: #d96f3d;
+        content: "0" counter(setup);
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        padding-top: 2px;
+      }
+
+      .setup-steps strong {
+        font-size: 14px;
+      }
+      .setup-steps p {
+        margin: 4px 0 0;
+        color: #52635b;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .menu-preview {
+        min-width: 0;
+        margin: 0;
+      }
+
+      .menu-preview img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 1px solid #cbd4ce;
+        border-radius: 5px;
+      }
+
+      .menu-preview figcaption {
+        margin-top: 7px;
+        color: #617169;
+        font-size: 12px;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        max-width: 1100px;
+        margin-bottom: 12px;
+      }
+
+      .section-heading h2 {
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .section-heading p {
+        margin: 0;
+        color: #617169;
+        font-size: 13px;
       }
 
       .readouts {
@@ -241,8 +397,24 @@
 
       @media (max-width: 680px) {
         header {
+          align-items: center;
+        }
+        .brand-icon {
+          width: 38px;
+          height: 38px;
+        }
+        h1 {
+          font-size: 18px;
+        }
+        .guide-heading {
           align-items: start;
           flex-direction: column;
+        }
+        .guide-content {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .menu-preview {
+          max-width: 520px;
         }
         .readouts {
           grid-template-columns: minmax(0, 1fr);
@@ -260,16 +432,85 @@
   </head>
   <body>
     <header>
-      <h1>T300 Input Monitor</h1>
-      <div class="controls">
-        <label for="controller">Controller</label>
-        <select id="controller" disabled>
-          <option value="">No controller</option>
-        </select>
-        <output id="status" class="status" aria-live="polite">Scanning</output>
+      <div class="brand">
+        <img class="brand-icon" src="docs/assets/t300-app-icon.png" alt="" />
+        <h1>Thrustmaster T300 Mac Fix</h1>
       </div>
     </header>
     <main>
+      <section class="setup-guide" aria-labelledby="setup-title">
+        <div class="guide-heading">
+          <div>
+            <h2 id="setup-title">Upset your T300 doesn't work in macOS?</h2>
+            <p>
+              Pedals act like buttons, the steering wheel is imprecise, and everything is mapped
+              wrong, yet Thrustmaster doesn't offer a macOS driver to fix it...
+            </p>
+          </div>
+          <div>
+            <h2 id="setup-title">Let's fix it</h2>
+            <p>Download the fix, install it, then come back to this page to see it work!</p>
+          </div>
+          <a
+            class="download-link"
+            href="https://github.com/lazd/thrustmaster-t300-mac-fix/releases/latest/download/T300-Mac-Fix.dmg"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
+            </svg>
+            Download latest DMG
+          </a>
+        </div>
+        <div class="guide-content">
+          <ol class="setup-steps">
+            <li>
+              <div>
+                <strong>Install T300 Mac Fix</strong>
+                <p>
+                  Open the DMG and run "Install T300 Mac Fix", type your password when prompted.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Connect the wheel</strong>
+                <p>Set the mode switch to PS3 / PC and connect it to your Mac over USB.</p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <strong>Wake controller access</strong>
+                <p>
+                  Press any wheel button, turn the steering wheel, press the pedals, and watch the
+                  live input below!
+                </p>
+              </div>
+            </li>
+          </ol>
+          <figure class="menu-preview">
+            <img
+              src="docs/assets/screenshot.png"
+              alt="Screenshot of the T300 Mac Fix menu-bar entry showing initialized status, Initialize Now, and Quit T300 Mac Fix."
+            />
+            <figcaption>The menu-bar icon appears while the T300 is connected.</figcaption>
+          </figure>
+        </div>
+      </section>
+      <div class="section-heading">
+        <h2>Live controller input</h2>
+        <div class="controls">
+          <select id="controller" disabled aria-label="Select controller">
+            <option value="">No controller</option>
+          </select>
+        </div>
+      </div>
+      <p><output id="status" class="status" aria-live="polite">🔍 Scanning...</output></p>
       <div class="readouts">
         <section aria-labelledby="axes-title">
           <h2 id="axes-title">Axes <output id="axis-count">0</output></h2>
@@ -300,10 +541,7 @@
       </div>
     </main>
     <aside id="raw-mode-toast" class="toast" role="alert" hidden>
-      <span
-        >The wheel is in an unsupported mode. Set its switch to PS3 / PC and reconnect; the
-        menu-bar app will initialize it automatically.</span
-      >
+      <span>Oh no! It looks like your T300 is plugged in and the fix isn't installed yet.</span>
       <button id="dismiss-toast" type="button">Dismiss</button>
     </aside>
     <script>
@@ -318,6 +556,7 @@
       let selectedIndex = null;
       let warningController = null;
       let warningDismissed = false;
+      let supportedControllerConnected = false;
 
       function connectedControllers() {
         return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
@@ -335,6 +574,9 @@
           controllerSelect.append(option);
         }
         controllerSelect.disabled = gamepads.length === 0;
+        if (gamepads.length === 0) {
+          controllerSelect.append(new Option("No controller", ""));
+        }
         if (!gamepads.some(({ index }) => index === selectedIndex)) {
           selectedIndex = gamepads[0]?.index ?? null;
         }
@@ -406,18 +648,25 @@
           warningController = key;
           warningDismissed = false;
         }
-        rawModeToast.hidden = !key || warningDismissed;
+        supportedControllerConnected = !key || warningDismissed;
+        rawModeToast.hidden = supportedControllerConnected;
       }
+
       function frame() {
         const gamepads = connectedControllers();
         updateControllerList(gamepads);
         const gamepad = gamepads.find(({ index }) => index === selectedIndex);
         updateRawModeWarning(gamepad);
         if (!gamepad) {
-          status.textContent = "No controller detected";
+          status.textContent = "Install the fix, then plug your controller in and press a button";
           showEmptyState("No input");
         } else {
-          status.textContent = "Connected";
+          if (supportedControllerConnected) {
+            status.textContent = "Fixed controller found! Test it below.";
+          } else {
+            status.textContent =
+              "Looks like your controller is plugged in, but it's not fixed yet! Try pressing the pedals, they register as buttons :(";
+          }
           axisCount.textContent = gamepad.axes.length;
           buttonCount.textContent = gamepad.buttons.length;
           updateRows(axesBody, gamepad.axes, true, false);
