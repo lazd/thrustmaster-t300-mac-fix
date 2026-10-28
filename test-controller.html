@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>T300 Input Monitor</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Avenir Next", Avenir, sans-serif;
+        color: #1d2925;
+        background: #f1f4f1;
+        font-synthesis: none;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        background: #f1f4f1;
+      }
+
+      header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 28px clamp(20px, 5vw, 64px) 22px;
+        border-bottom: 1px solid #cad4ce;
+        background: rgb(241 244 241 / 94%);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 650;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      label,
+      .status {
+        font-size: 13px;
+      }
+      .status {
+        min-width: 124px;
+        color: #52635b;
+      }
+
+      select {
+        min-height: 38px;
+        border: 1px solid #9caaa2;
+        border-radius: 4px;
+        background: #fff;
+        color: inherit;
+        font: inherit;
+      }
+
+      select {
+        max-width: 260px;
+        padding: 0 30px 0 10px;
+      }
+      select:focus-visible {
+        outline: 3px solid #ed9b52;
+        outline-offset: 2px;
+      }
+
+      main {
+        padding: 28px clamp(20px, 5vw, 64px) 56px;
+      }
+
+      .readouts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: clamp(24px, 5vw, 64px);
+        max-width: 1100px;
+      }
+
+      section {
+        min-width: 0;
+      }
+
+      h2 {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin: 0 0 12px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #1d2925;
+        font-size: 17px;
+      }
+
+      h2 output {
+        color: #617169;
+        font:
+          13px ui-monospace,
+          monospace;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      th,
+      td {
+        height: 39px;
+        padding: 6px 10px;
+        border-bottom: 1px solid #d5ddd8;
+        text-align: left;
+      }
+
+      th {
+        color: #617169;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      th:first-child,
+      td:first-child {
+        width: 72px;
+      }
+      th:nth-child(2),
+      td:nth-child(2) {
+        width: 84px;
+        text-align: right;
+      }
+
+      td {
+        font:
+          13px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      td:first-child {
+        color: #617169;
+      }
+      .meter-cell {
+        padding-left: 18px;
+      }
+
+      .meter {
+        position: relative;
+        height: 8px;
+        overflow: hidden;
+        border-radius: 2px;
+        background: #d7dfda;
+      }
+
+      .meter.centered::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+        background: #78877f;
+        content: "";
+      }
+
+      .meter-fill {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        background: #168263;
+      }
+
+      .centered .meter-fill {
+        background: #d96f3d;
+      }
+
+      .pressed {
+        color: #176d55;
+        font-weight: 700;
+      }
+
+      .empty {
+        padding: 18px 10px;
+        color: #617169;
+        font:
+          13px "Avenir Next",
+          Avenir,
+          sans-serif;
+      }
+
+      .toast {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        width: min(520px, calc(100vw - 40px));
+        padding: 16px 18px;
+        border: 1px solid #d5a076;
+        border-left: 4px solid #d96f3d;
+        border-radius: 4px;
+        background: #fff;
+        box-shadow: 0 8px 26px rgb(29 41 37 / 16%);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .toast[hidden] {
+        display: none;
+      }
+      .toast code {
+        color: #8d4526;
+        font:
+          13px ui-monospace,
+          monospace;
+      }
+      .toast button {
+        flex: 0 0 auto;
+        padding: 6px 9px;
+        border: 1px solid #9caaa2;
+        border-radius: 3px;
+        background: #fff;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .toast button:focus-visible {
+        outline: 3px solid #ed9b52;
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 680px) {
+        header {
+          align-items: start;
+          flex-direction: column;
+        }
+        .readouts {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 32px;
+        }
+        .controls {
+          width: 100%;
+        }
+        .status {
+          flex-basis: 100%;
+          order: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>T300 Input Monitor</h1>
+      <div class="controls">
+        <label for="controller">Controller</label>
+        <select id="controller" disabled>
+          <option value="">No controller</option>
+        </select>
+        <output id="status" class="status" aria-live="polite">Scanning</output>
+      </div>
+    </header>
+    <main>
+      <div class="readouts">
+        <section aria-labelledby="axes-title">
+          <h2 id="axes-title">Axes <output id="axis-count">0</output></h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Value</th>
+                <th>Position</th>
+              </tr>
+            </thead>
+            <tbody id="axes"></tbody>
+          </table>
+        </section>
+        <section aria-labelledby="buttons-title">
+          <h2 id="buttons-title">Buttons <output id="button-count">0</output></h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Value</th>
+                <th>Level</th>
+              </tr>
+            </thead>
+            <tbody id="buttons"></tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+    <aside id="raw-mode-toast" class="toast" role="alert" hidden>
+      <span
+        >The wheel is in an unsupported mode. Run <code>npm run initialize</code>, then revisit this
+        page.</span
+      >
+      <button id="dismiss-toast" type="button">Dismiss</button>
+    </aside>
+    <script>
+      const controllerSelect = document.querySelector("#controller");
+      const status = document.querySelector("#status");
+      const rawModeToast = document.querySelector("#raw-mode-toast");
+      const dismissToast = document.querySelector("#dismiss-toast");
+      const axesBody = document.querySelector("#axes");
+      const buttonsBody = document.querySelector("#buttons");
+      const axisCount = document.querySelector("#axis-count");
+      const buttonCount = document.querySelector("#button-count");
+      let selectedIndex = null;
+      let warningController = null;
+      let warningDismissed = false;
+
+      function connectedControllers() {
+        return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
+      }
+
+      function updateControllerList(gamepads) {
+        const signature = gamepads.map(({ index, id }) => `${index}:${id}`).join("|");
+        if (controllerSelect.dataset.signature === signature) return;
+        controllerSelect.dataset.signature = signature;
+        controllerSelect.replaceChildren();
+        for (const gamepad of gamepads) {
+          const option = document.createElement("option");
+          option.value = gamepad.index;
+          option.textContent = `Controller ${gamepad.index}`;
+          controllerSelect.append(option);
+        }
+        controllerSelect.disabled = gamepads.length === 0;
+        if (!gamepads.some(({ index }) => index === selectedIndex)) {
+          selectedIndex = gamepads[0]?.index ?? null;
+        }
+        if (selectedIndex !== null) controllerSelect.value = String(selectedIndex);
+      }
+
+      function makeRows(body, count, centered) {
+        body.replaceChildren();
+        for (let index = 0; index < count; index++) {
+          const row = document.createElement("tr");
+          const indexCell = document.createElement("td");
+          const valueCell = document.createElement("td");
+          const meterCell = document.createElement("td");
+          const meter = document.createElement("div");
+          const fill = document.createElement("span");
+          indexCell.textContent = index;
+          valueCell.textContent = "0.000";
+          meter.className = centered ? "meter centered" : "meter";
+          fill.className = "meter-fill";
+          meter.append(fill);
+          meterCell.className = "meter-cell";
+          meterCell.append(meter);
+          row.append(indexCell, valueCell, meterCell);
+          body.append(row);
+        }
+      }
+
+      function updateRows(body, values, centered, isButton) {
+        if (body.rows.length !== values.length) {
+          makeRows(body, values.length, centered);
+        }
+        values.forEach((value, index) => {
+          const row = body.rows[index];
+          const numericValue = typeof value === "number" ? value : value.value;
+          const pressed = isButton && value.pressed;
+          row.cells[1].textContent = numericValue.toFixed(3);
+          row.cells[1].classList.toggle("pressed", Boolean(pressed));
+          if (centered) {
+            const magnitude = Math.min(1, Math.abs(numericValue)) * 50;
+            row.cells[2].firstChild.firstChild.style.left = `${numericValue < 0 ? 50 - magnitude : 50}%`;
+            row.cells[2].firstChild.firstChild.style.width = `${magnitude}%`;
+          } else {
+            row.cells[2].firstChild.firstChild.style.width = `${Math.min(1, Math.max(0, numericValue)) * 100}%`;
+          }
+        });
+      }
+
+      function showEmptyState(message) {
+        axesBody.replaceChildren();
+        buttonsBody.replaceChildren();
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 3;
+        cell.className = "empty";
+        cell.textContent = message;
+        row.append(cell);
+        axesBody.append(row.cloneNode(true));
+        buttonsBody.append(row);
+        axisCount.textContent = "0";
+        buttonCount.textContent = "0";
+      }
+
+      function updateRawModeWarning(gamepad) {
+        const match = gamepad?.id.match(/\bvendor\s*:\s*044f\b.*?\bproduct\s*:\s*([0-9a-f]{4})\b/i);
+        const productId = match ? Number.parseInt(match[1], 16) : null;
+        const unsupported = [0xb65d, 0xb66d, 0xb66f].includes(productId);
+        const key = unsupported ? `${gamepad.index}:${gamepad.id}` : null;
+        if (key !== warningController) {
+          warningController = key;
+          warningDismissed = false;
+        }
+        rawModeToast.hidden = !key || warningDismissed;
+      }
+      function frame() {
+        const gamepads = connectedControllers();
+        updateControllerList(gamepads);
+        const gamepad = gamepads.find(({ index }) => index === selectedIndex);
+        updateRawModeWarning(gamepad);
+        if (!gamepad) {
+          status.textContent = "No controller detected";
+          showEmptyState("No input");
+        } else {
+          status.textContent = "Connected";
+          axisCount.textContent = gamepad.axes.length;
+          buttonCount.textContent = gamepad.buttons.length;
+          updateRows(axesBody, gamepad.axes, true, false);
+          updateRows(buttonsBody, gamepad.buttons, false, true);
+        }
+        requestAnimationFrame(frame);
+      }
+
+      controllerSelect.addEventListener("change", () => {
+        selectedIndex = Number(controllerSelect.value);
+      });
+      dismissToast.addEventListener("click", () => {
+        warningDismissed = true;
+        rawModeToast.hidden = true;
+      });
+      frame();
+    </script>
+  </body>
+</html>

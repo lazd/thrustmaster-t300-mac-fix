@@ -1,0 +1,17 @@
+{
+  "name": "thrustmaster-t300-mac-fix",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "inspect": "node initialize-t300.mjs",
+    "initialize": "sudo node initialize-t300.mjs --initialize",
+    "test": "open test-controller.html"
+  },
+  "dependencies": {
+    "usb": "^2.19.1"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}
