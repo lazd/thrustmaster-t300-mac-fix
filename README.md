@@ -11,7 +11,7 @@ Initialize a Thrustmaster T300 on macOS with a menu-bar app and automatic plug-i
 
 The menu-bar app starts at login and appears when the T300 is connected. Future plug-ins do not require another administrator prompt. If Gatekeeper blocks the unsigned app, Control-click it and choose **Open**.
 
-To remove the app and its helper, open the DMG and launch **Uninstall T300 Mac Fix**, then approve the administrator prompt.
+To remove the app and its helper, choose **Uninstall T300 Mac Fix...** from the menu bar and confirm, then approve the administrator prompt in Terminal. You can also open the DMG and launch **Uninstall T300 Mac Fix**.
 
 To check the live controller inputs, open `test-controller.html` or simply run:
 
@@ -25,7 +25,7 @@ You can also use the [online controller tester](https://lazd.github.io/thrustmas
 
 ## Menu Bar App
 
-The menu app launches at login and stays hidden until a T300 is connected. A root LaunchDaemon watches for the wheel and initializes generic mode automatically; the menu shows the result and offers retry and quit options. Administrator approval is required when installing or updating the helper, but plugging in the wheel never prompts. Building or updating the app requires Xcode Command Line Tools.
+The menu app launches at login and stays hidden until a T300 is connected. A root LaunchDaemon watches for the wheel and initializes generic mode automatically; the menu shows the result and offers retry, uninstall, and quit options. Administrator approval is required when installing, updating, or uninstalling the helper, but plugging in the wheel never prompts. Building or updating the app requires Xcode Command Line Tools.
 
 Remove the app and its login item with:
 

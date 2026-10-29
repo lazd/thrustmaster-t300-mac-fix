@@ -38,6 +38,8 @@ menu_app="$build_directory/T300 Mac Fix.app"
 mkdir -p "$menu_app/Contents/MacOS" "$menu_app/Contents/Resources"
 cp "$build_directory/T300MenuBar" "$menu_app/Contents/MacOS/T300MenuBar"
 cp "$build_directory/Menu.icns" "$menu_app/Contents/Resources/AppIcon.icns"
+cp "$project_dir/scripts/dmg/uninstall.command" "$project_dir/scripts/dmg/uninstall-root.sh" "$menu_app/Contents/Resources/"
+chmod 755 "$menu_app/Contents/Resources/uninstall.command" "$menu_app/Contents/Resources/uninstall-root.sh"
 cat > "$menu_app/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -115,7 +117,7 @@ INSTALL
 The menu-bar app starts at login. The privileged helper initializes the wheel when it is plugged in, without another prompt.
 
 UNINSTALL
-Open Uninstall T300 Mac Fix and approve the administrator prompt to remove the helper, startup services, and app.
+Choose Uninstall T300 Mac Fix from the menu bar and confirm, or open Uninstall T300 Mac Fix from this disk image. Approve the administrator prompt in Terminal to remove the helper, startup services, and app.
 
 The DMG is not Developer ID signed or notarized. On macOS, Control-click an app and choose Open if Gatekeeper blocks it.
 README

@@ -60,6 +60,7 @@ struct T300PrivilegedHelper {
         let requestDirectory = URL(fileURLWithPath: CommandLine.arguments[2], isDirectory: true)
         let statusURL = stateDirectory.appendingPathComponent("helper-state.json")
         let retryURL = requestDirectory.appendingPathComponent("initialize.request")
+        let automaticInitializationDisabledURL = requestDirectory.appendingPathComponent("automatic-initialization.disabled")
         var lastState: String?
         var lastMessage: String?
         var attemptedForConnection = false
@@ -82,11 +83,15 @@ struct T300PrivilegedHelper {
                     attemptedForConnection = false
                 }
 
-                if !attemptedForConnection {
+                let automaticInitializationEnabled = !FileManager.default.fileExists(atPath: automaticInitializationDisabledURL.path)
+                if !attemptedForConnection && (retryRequested || automaticInitializationEnabled) {
                     attemptedForConnection = true
                     report("initializing", "Keep hands clear; the wheel may move.")
                     Thread.sleep(forTimeInterval: 3)
-                    if connectedT300ProductIDs().contains(genericProductID) {
+                    if !retryRequested && FileManager.default.fileExists(atPath: automaticInitializationDisabledURL.path) {
+                        attemptedForConnection = false
+                        report("waiting", "Automatic initialization is disabled")
+                    } else if connectedT300ProductIDs().contains(genericProductID) {
                         var message = [CChar](repeating: 0, count: 1024)
                         let result = message.withUnsafeMutableBufferPointer { buffer in
                             t300_initialize(buffer.baseAddress, buffer.count)
@@ -97,6 +102,8 @@ struct T300PrivilegedHelper {
                         attemptedForConnection = false
                         report("waiting", "Waiting for T300")
                     }
+                } else if !attemptedForConnection {
+                    report("waiting", "Automatic initialization is disabled")
                 }
             } else {
                 attemptedForConnection = false

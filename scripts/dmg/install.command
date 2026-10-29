@@ -1,16 +1,18 @@
 #!/bin/bash
 set +e
 RESOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
-echo "📦 Installing T300 Mac Fix. macOS will ask for administrator approval once."
-echo ""
-echo "⚠️ WARNING: If your T300 is already connnected, it will spin! Keep your hands clear."
+printf '\n📦 T300 Mac Fix Installer\n'
+printf '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
+printf '⚠️  WARNING: If your T300 is already connected, it will spin!\n'
+printf '   Keep your hands clear.\n\n'
+printf '🔐 macOS will ask for administrator approval once to install the helper.\n\n'
 
 sudo /bin/sh "$RESOURCE_DIR/install-root.sh" "$RESOURCE_DIR/Payload"
 result=$?
 if [ "$result" -eq 0 ]; then
-  echo "✅ Installation complete. The menu-bar app starts at login."
+  printf '\n✅ Installation complete. The menu-bar app starts at login.\n\n'
 else
-  echo "🛑 Installation failed with exit code $result."
+  printf '\n🛑 Installation failed with exit code %s.\n\n' "$result"
 fi
-read -r -p "Press Return to close this window..."
+read -r -p "Press Return to close this window... "
 exit "$result"

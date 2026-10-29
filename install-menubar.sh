@@ -37,7 +37,9 @@ fi
 
 build_directory=$(mktemp -d)
 trap 'rm -rf "$build_directory"' EXIT
-mkdir -p "$app_contents/MacOS" "$HOME/Library/LaunchAgents" "$HOME/Library/Logs" "$user_request_directory"
+mkdir -p "$app_contents/MacOS" "$app_contents/Resources" "$HOME/Library/LaunchAgents" "$HOME/Library/Logs" "$user_request_directory"
+cp "$project_dir/scripts/dmg/uninstall.command" "$project_dir/scripts/dmg/uninstall-root.sh" "$app_contents/Resources/"
+chmod 755 "$app_contents/Resources/uninstall.command" "$app_contents/Resources/uninstall-root.sh"
 chmod 700 "$user_request_directory"
 clang -O -c "$project_dir/T300USB.c" -o "$build_directory/T300USB.o"
 swiftc -swift-version 5 -parse-as-library -O -framework AppKit -framework IOKit \

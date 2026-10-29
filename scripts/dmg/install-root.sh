@@ -2,13 +2,13 @@
 set -eu
 
 if [ "$(id -u)" -ne 0 ]; then
-  printf 'Run this installer with administrator privileges.\n' >&2
+  printf '🛑  Run this installer with administrator privileges.\n' >&2
   exit 1
 fi
 payload_directory=${1:?Missing DMG payload directory}
 target_user=${SUDO_USER:-}
 if [ -z "$target_user" ] || [ "$target_user" = root ]; then
-  printf 'Launch the installer from a standard user account in Terminal.\n' >&2
+  printf '🛑  Launch the installer from a standard user account in Terminal.\n' >&2
   exit 1
 fi
 target_uid=$(id -u "$target_user")
@@ -27,19 +27,22 @@ agent_label="com.lazd.thrustmaster-t300-menubar"
 agent_path="$target_home/Library/LaunchAgents/$agent_label.plist"
 
 if [ ! -d "$app_source" ] || [ ! -x "$helper_source" ]; then
-  printf 'The installer payload is incomplete.\n' >&2
+  printf '🛑 The installer payload is incomplete.\n' >&2
   exit 1
 fi
 
+printf '\n🔄 Preparing the installation...\n\n'
 launchctl bootout system "$daemon_path" >/dev/null 2>&1 || true
 launchctl bootout "gui/$target_uid" "$agent_path" >/dev/null 2>&1 || true
 rm -rf "$app_path"
+printf '📥 Copying the app and privileged helper...\n'
 ditto "$app_source" "$app_path"
 install -d -o root -g wheel -m 755 "/Library/PrivilegedHelperTools" "$system_state_directory"
 install -o root -g wheel -m 755 "$helper_source" "$helper_path"
 rm -f "$system_state_directory/helper-state.json"
 install -d -o "$target_user" -g "$target_group" -m 700 "$user_request_directory" "$target_home/Library/LaunchAgents"
 
+printf '\n⚙️  Registering startup services...\n'
 cat > "$daemon_path" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -70,13 +73,18 @@ cat > "$agent_path" <<PLIST
 </plist>
 PLIST
 
-plutil -lint "$daemon_path" "$agent_path"
+plutil -lint "$daemon_path" "$agent_path" >/dev/null
+printf '   📄 %s\n' "$daemon_path"
+printf '   📄 %s\n' "$agent_path"
 chown root:wheel "$daemon_path"
 chmod 644 "$daemon_path"
 chown "$target_user:$target_group" "$agent_path"
 chmod 644 "$agent_path"
+printf '\n🚀 Starting the helper and menu-bar app...\n'
 launchctl bootstrap system "$daemon_path"
 launchctl kickstart -k "system/$helper_label"
 launchctl bootstrap "gui/$target_uid" "$agent_path"
 launchctl kickstart -k "gui/$target_uid/$agent_label"
-printf 'T300 Mac Fix is installed. Administrator approval will not be requested when the wheel is plugged in.\n'
+printf '\n✅ T300 Mac Fix is installed.\n\n'
+printf '   It starts at login and initializes the wheel when connected.\n'
+printf '   You will not be asked for administrator approval when plugging in the wheel.\n\n'
